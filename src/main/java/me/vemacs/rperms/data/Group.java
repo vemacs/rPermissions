@@ -26,7 +26,6 @@ public class Group {
         PermissionAttachment attachment = p.addAttachment(rPermissions.getInstance());
         for (Map.Entry<String, Boolean> entry : getPerms().entrySet())
             attachment.setPermission(entry.getKey(), entry.getValue());
-        p.recalculatePermissions();
     }
 
     public void save() {
@@ -41,12 +40,10 @@ public class Group {
         List<Group> tree = new ArrayList<>();
         tree.add(0, this);
         for (Group top : ancestors) {
-            if (top.getName().equalsIgnoreCase(getName())) {
+            if (top.getName().equalsIgnoreCase(getName()))
                 continue;
-            }
-            for (Group trunk : calculateBackwardTree(top)) {
+            for (Group trunk : calculateBackwardTree(top))
                 tree.add(0, trunk);
-            }
         }
         return tree;
     }
@@ -55,12 +52,10 @@ public class Group {
         List<Group> tree = new ArrayList<>();
         tree.add(group);
         for (Group top : group.getAncestors()) {
-            if (top.getName().equalsIgnoreCase(group.getName())) {
+            if (top.getName().equalsIgnoreCase(group.getName()))
                 continue;
-            }
-            for (Group trunk : calculateBackwardTree(top)) {
+            for (Group trunk : calculateBackwardTree(top))
                 tree.add(trunk);
-            }
         }
         return tree;
     }
