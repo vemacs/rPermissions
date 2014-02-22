@@ -18,9 +18,9 @@ public class Group {
     @NonNull
     private String prefix;
     @NonNull
-    private Map<String, Boolean> perms = new HashMap<>();
+    private Map<String, Boolean> perms;
     @NonNull
-    private List<Group> ancestors = new ArrayList<>();
+    private List<Group> ancestors;
 
     public void attach(Player p) {
         PermissionAttachment attachment = p.addAttachment(rPermissions.getInstance());
