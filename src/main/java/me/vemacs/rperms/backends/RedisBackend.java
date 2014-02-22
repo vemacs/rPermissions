@@ -31,9 +31,13 @@ public class RedisBackend implements Backend {
         try {
             jedis.hset(groupPrefix + name, "prefix", group.getPrefix());
             jedis.hset(groupPrefix + name, "ancestors", joiner.join(group.getAncestors()));
-            jedis.del(permPrefix + group);
+            Set<String> remotePerms = jedis.smembers(permPrefix + group);
+            for (String perm : remotePerms)
+                if (!perms.contains(perm))
+                    jedis.srem(permPrefix + name, perm);
             for (String perm : perms)
-                jedis.sadd(permPrefix + group, perm);
+                if (!remotePerms.contains(perm))
+                    jedis.sadd(permPrefix + name, perm);
         } finally {
             ConnectionManager.getPool().returnResource(jedis);
         }

@@ -5,6 +5,7 @@ import lombok.NonNull;
 import me.vemacs.rperms.rPermissions;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
+import org.bukkit.permissions.PermissionAttachment;
 
 @Data
 public class PlayerData {
@@ -14,6 +15,10 @@ public class PlayerData {
     private String prefix;
     @NonNull
     private Group group;
+
+    public void update() {
+        Player player = getPlayer();
+    }
 
     public void setup() {
         Player player = getPlayer();
