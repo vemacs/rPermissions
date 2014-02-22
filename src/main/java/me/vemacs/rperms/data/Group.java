@@ -32,4 +32,36 @@ public class Group {
     public void save() {
         rPermissions.getBackend().saveGroup(this);
     }
+
+    /*
+    Adapted from Privileges by krinsdeath
+     */
+
+    public List<Group> calculateGroupTree() {
+        List<Group> tree = new ArrayList<>();
+        tree.add(0, this);
+        for (Group top : ancestors) {
+            if (top.getName().equalsIgnoreCase(getName())) {
+                continue;
+            }
+            for (Group trunk : calculateBackwardTree(top)) {
+                tree.add(0, trunk);
+            }
+        }
+        return tree;
+    }
+
+    private List<Group> calculateBackwardTree(Group group) {
+        List<Group> tree = new ArrayList<>();
+        tree.add(group);
+        for (Group top : group.getAncestors()) {
+            if (top.getName().equalsIgnoreCase(group.getName())) {
+                continue;
+            }
+            for (Group trunk : calculateBackwardTree(top)) {
+                tree.add(trunk);
+            }
+        }
+        return tree;
+    }
 }
