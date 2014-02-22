@@ -4,6 +4,7 @@ import lombok.Getter;
 import me.vemacs.rperms.backends.Backend;
 import me.vemacs.rperms.backends.RedisBackend;
 import me.vemacs.rperms.data.Group;
+import me.vemacs.rperms.data.PlayerData;
 import me.vemacs.rperms.redis.ConnectionManager;
 import me.vemacs.rperms.redis.MessageHandler;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -21,6 +22,8 @@ public class rPermissions extends JavaPlugin {
     private static Backend backend;
     @Getter
     private static Map<String, Group> groups = new HashMap<>();
+    @Getter
+    private static Map<String, PlayerData> players = new HashMap<>();
     @Getter
     private static ConnectionManager connectionManager;
 
