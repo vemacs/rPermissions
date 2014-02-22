@@ -28,4 +28,8 @@ public class Group {
             attachment.setPermission(entry.getKey(), entry.getValue());
         p.recalculatePermissions();
     }
+
+    public void save() {
+        rPermissions.getBackend().saveGroup(this);
+    }
 }

@@ -35,4 +35,8 @@ public class PlayerData {
                 return player;
         return null;
     }
+
+    public void save() {
+        rPermissions.getBackend().savePlayerData(this);
+    }
 }
