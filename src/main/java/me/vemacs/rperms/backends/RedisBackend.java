@@ -83,9 +83,16 @@ public class RedisBackend implements Backend {
                     perms.put(perm, !perm.startsWith("-"));
                 List<String> ancestorList = Arrays.asList(jedis.hget(groupPrefix + group, "ancestors").split(","));
                 List<Group> ancestors = new ArrayList<>();
-                for (String ancestor : ancestorList)
-                    ancestors.add(rPermissions.getGroups().containsKey(ancestor.toLowerCase()) ?
-                            rPermissions.getGroups().get(ancestor.toLowerCase()) : loadGroup(ancestor));
+                for (String ancestor : ancestorList) {
+                    Group ancestorGrp;
+                    if (rPermissions.getGroups().containsKey(ancestor.toLowerCase()))
+                        ancestorGrp = rPermissions.getGroups().get(ancestor.toLowerCase());
+                    else {
+                        ancestorGrp = loadGroup(ancestor);
+                        rPermissions.getGroups().put(ancestor.toLowerCase(), ancestorGrp);
+                    }
+                    ancestors.add(ancestorGrp);
+                }
                 return new Group(group, "", perms, ancestors);
             }
         } finally {
