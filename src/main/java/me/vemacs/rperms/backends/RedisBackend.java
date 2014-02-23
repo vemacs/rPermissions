@@ -5,7 +5,6 @@ import me.vemacs.rperms.data.Group;
 import me.vemacs.rperms.data.PlayerData;
 import me.vemacs.rperms.rPermissions;
 import me.vemacs.rperms.redis.ConnectionManager;
-import org.bukkit.entity.Player;
 import redis.clients.jedis.Jedis;
 
 import java.util.*;
@@ -14,15 +13,32 @@ public class RedisBackend implements Backend {
     private static String groupPrefix;
     private static String playerPrefix;
     private static String permPrefix;
+    private static String existingKey;
 
     public RedisBackend(String prefix) {
         groupPrefix = prefix + "-group:";
         playerPrefix = prefix + "-player:";
-        playerPrefix = prefix + "-perms:";
+        permPrefix = prefix + "-perms:";
+        existingKey = prefix + "-existing";
     }
 
     private static final Joiner joiner = Joiner.on(",").skipNulls();
 
+    @Override
+    public void loadGroups() {
+        Jedis jedis = ConnectionManager.getPool().getResource();
+        try {
+            if (jedis.exists(existingKey))
+                for (String grpStr : jedis.smembers(existingKey))
+                    loadGroup(grpStr);
+            else
+                loadGroup("default");
+        } finally {
+            ConnectionManager.getPool().returnResource(jedis);
+        }
+    }
+
+    @Override
     public void saveGroup(Group group) {
         Jedis jedis = ConnectionManager.getPool().getResource();
         String name = group.getName().toLowerCase();
@@ -100,6 +116,7 @@ public class RedisBackend implements Backend {
             } else {
                 newGrp = new Group(group, "", new HashMap<String, Boolean>(), Collections.<Group>emptyList());
             }
+            jedis.sadd(existingKey, group);
         } finally {
             ConnectionManager.getPool().returnResource(jedis);
         }

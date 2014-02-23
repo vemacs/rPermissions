@@ -34,5 +34,6 @@ public class rPermissions extends JavaPlugin {
         connectionManager = new ConnectionManager(config.getString("ip"), config.getInt("port"),
                 config.getString("password"), Collections.<MessageHandler>emptySet());
         backend = new RedisBackend(config.getString("prefix"));
+        backend.loadGroups();
     }
 }
