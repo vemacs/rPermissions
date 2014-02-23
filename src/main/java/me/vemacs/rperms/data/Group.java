@@ -28,20 +28,25 @@ public class Group {
             attachment.setPermission(entry.getKey(), entry.getValue());
     }
 
-    public void update() {
+    public void reload() {
         Group newGrp = rPermissions.getBackend().loadGroup(this.getName());
         setPrefix(newGrp.getPrefix());
         setPerms(newGrp.getPerms());
         setAncestors(newGrp.getAncestors());
+        update();
+    }
+
+    public void save() {
+        rPermissions.getBackend().saveGroup(this);
+        update();
+    }
+
+    public void update() {
         for (PlayerData data : rPermissions.getPlayers().values())
             if (data.getGroup().calculateGroupTree().contains(this)) {
                 rPermissions.getInstance().getLogger().info("Updated group " + name + " for " + data.getName());
                 data.register();
             }
-    }
-
-    public void save() {
-        rPermissions.getBackend().saveGroup(this);
     }
 
     /*

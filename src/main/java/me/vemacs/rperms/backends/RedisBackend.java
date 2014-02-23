@@ -5,6 +5,7 @@ import me.vemacs.rperms.data.Group;
 import me.vemacs.rperms.data.PlayerData;
 import me.vemacs.rperms.rPermissions;
 import me.vemacs.rperms.redis.ConnectionManager;
+import org.bukkit.entity.Player;
 import redis.clients.jedis.Jedis;
 
 import java.util.*;
@@ -59,22 +60,26 @@ public class RedisBackend implements Backend {
     public PlayerData loadPlayerData(String player) {
         Jedis jedis = ConnectionManager.getPool().getResource();
         player = player.toLowerCase();
+        PlayerData newData;
         try {
-            if (jedis.exists(playerPrefix + player))
-                return new PlayerData(player,
-                        jedis.hget(playerPrefix + player, "prefix"),
-                        rPermissions.getGroups().get(jedis.hget(playerPrefix + player, "group").toLowerCase())
-                );
+            if (jedis.exists(playerPrefix + player)) newData = new PlayerData(player,
+                    jedis.hget(playerPrefix + player, "prefix"),
+                    rPermissions.getGroups().get(jedis.hget(playerPrefix + player, "group").toLowerCase())
+            );
+            else
+                newData = new PlayerData(player, "", rPermissions.getGroups().get("default"));
         } finally {
             ConnectionManager.getPool().returnResource(jedis);
         }
-        return new PlayerData(player, "", rPermissions.getGroups().get("default"));
+        rPermissions.getPlayers().put(player, newData);
+        return newData;
     }
 
     @Override
     public Group loadGroup(String group) {
         Jedis jedis = ConnectionManager.getPool().getResource();
         group = group.toLowerCase();
+        Group newGrp;
         try {
             if (jedis.exists(groupPrefix + group)) {
                 Set<String> permSet = jedis.smembers(permPrefix + group);
@@ -87,17 +92,18 @@ public class RedisBackend implements Backend {
                     Group ancestorGrp;
                     if (rPermissions.getGroups().containsKey(ancestor.toLowerCase()))
                         ancestorGrp = rPermissions.getGroups().get(ancestor.toLowerCase());
-                    else {
+                    else
                         ancestorGrp = loadGroup(ancestor);
-                        rPermissions.getGroups().put(ancestor.toLowerCase(), ancestorGrp);
-                    }
                     ancestors.add(ancestorGrp);
                 }
-                return new Group(group, "", perms, ancestors);
+                newGrp = new Group(group, "", perms, ancestors);
+            } else {
+                newGrp = new Group(group, "", new HashMap<String, Boolean>(), Collections.<Group>emptyList());
             }
         } finally {
             ConnectionManager.getPool().returnResource(jedis);
         }
-        return new Group(group, "", new HashMap<String, Boolean>(), Collections.<Group>emptyList());
+        rPermissions.getGroups().put(group, newGrp);
+        return newGrp;
     }
 }

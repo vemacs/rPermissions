@@ -17,6 +17,18 @@ public class PlayerData {
     @NonNull
     private Group group;
 
+    public void reload() {
+        PlayerData newData = rPermissions.getBackend().loadPlayerData(this.getName());
+        setPrefix(newData.getPrefix());
+        setGroup(newData.getGroup());
+        register();
+    }
+
+    public void save() {
+        rPermissions.getBackend().savePlayerData(this);
+        register();
+    }
+
     public void register() {
         Player player = getPlayer();
         for (PermissionAttachmentInfo info : player.getEffectivePermissions()) {
@@ -34,9 +46,5 @@ public class PlayerData {
             if (player.getName().equalsIgnoreCase(name))
                 return player;
         return null;
-    }
-
-    public void save() {
-        rPermissions.getBackend().savePlayerData(this);
     }
 }
