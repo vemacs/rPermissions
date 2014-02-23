@@ -3,10 +3,7 @@ package me.vemacs.rperms.redis;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPubSub;
 
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class PubSubListener {
     String prefix;
@@ -19,14 +16,17 @@ public class PubSubListener {
         this.prefix = prefix;
         this.channels = channels;
         jpsh = new JedisPubSubHandler(channels);
-        for (final MessageHandler entry : channels) {
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    jpsh.subscribe(prefix + entry.getChannel());
-                }
-            }, "rPermissions PubSub Listener").start();
+        final Set<String> channels1 = new HashSet<>();
+        for (MessageHandler handler : channels) {
+            channels1.add(prefix + handler.getChannel());
         }
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                listener = connectionManager.getPool().getResource();
+                listener.subscribe(jpsh, channels1.toArray(new String[channels1.size()]));
+            }
+        }, "rPermissions PubSub Listener").start();
     }
 
     public void poison() {
