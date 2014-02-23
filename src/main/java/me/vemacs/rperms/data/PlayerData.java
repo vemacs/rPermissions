@@ -6,6 +6,7 @@ import me.vemacs.rperms.rPermissions;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.permissions.PermissionAttachment;
+import org.bukkit.permissions.PermissionAttachmentInfo;
 
 @Data
 public class PlayerData {
@@ -18,13 +19,19 @@ public class PlayerData {
 
     public void update() {
         Player player = getPlayer();
+        for (PermissionAttachmentInfo info : player.getEffectivePermissions()) {
+            PermissionAttachment attachment = info.getAttachment();
+            if (attachment == null)
+                continue;
+            attachment.unsetPermission(info.getPermission());
+        }
+        setup();
     }
 
     public void setup() {
         Player player = getPlayer();
         for (Group member : group.calculateGroupTree())
             member.attach(player);
-        player.recalculatePermissions();
     }
 
     public Player getPlayer() {
