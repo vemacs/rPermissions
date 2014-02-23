@@ -3,6 +3,9 @@ package me.vemacs.rperms;
 import lombok.Getter;
 import me.vemacs.rperms.backends.Backend;
 import me.vemacs.rperms.backends.RedisBackend;
+import me.vemacs.rperms.backends.ebean.DbGroup;
+import me.vemacs.rperms.backends.ebean.DbPermission;
+import me.vemacs.rperms.backends.ebean.DbPlayerData;
 import me.vemacs.rperms.data.Group;
 import me.vemacs.rperms.data.PlayerData;
 import me.vemacs.rperms.listener.PlayerListener;
@@ -15,9 +18,7 @@ import org.bukkit.permissions.PermissionAttachmentInfo;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public class rPermissions extends JavaPlugin {
     @Getter
@@ -53,5 +54,10 @@ public class rPermissions extends JavaPlugin {
             rPermissions.getPlayers().get(player.getName()).register();
         }
         getServer().getPluginManager().registerEvents(new PlayerListener(), this);
+    }
+
+    @Override
+    public List<Class<?>> getDatabaseClasses() {
+        return Arrays.asList(DbGroup.class, DbPermission.class, DbPlayerData.class);
     }
 }
