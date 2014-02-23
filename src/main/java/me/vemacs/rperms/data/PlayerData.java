@@ -17,7 +17,7 @@ public class PlayerData {
     @NonNull
     private Group group;
 
-    public void update() {
+    public void register() {
         Player player = getPlayer();
         for (PermissionAttachmentInfo info : player.getEffectivePermissions()) {
             PermissionAttachment attachment = info.getAttachment();
@@ -25,11 +25,6 @@ public class PlayerData {
                 continue;
             attachment.unsetPermission(info.getPermission());
         }
-        setup();
-    }
-
-    public void setup() {
-        Player player = getPlayer();
         for (Group member : group.calculateGroupTree())
             member.attach(player);
     }
