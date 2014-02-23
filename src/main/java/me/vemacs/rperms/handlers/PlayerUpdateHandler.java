@@ -5,7 +5,7 @@ import me.vemacs.rperms.redis.MessageHandler;
 
 public class PlayerUpdateHandler extends MessageHandler {
     public PlayerUpdateHandler(String channel, String name, boolean ignoreSelf) {
-        super(channel, name, ignoreSelf);
+        super(rPermissions.getConnectionManager(), channel, name, ignoreSelf);
     }
 
     @Override

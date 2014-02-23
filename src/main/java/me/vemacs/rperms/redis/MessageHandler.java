@@ -12,6 +12,8 @@ public abstract class MessageHandler {
     @Getter
     private static final String delim = "@end-origin";
     @NonNull
+    ConnectionManager manager;
+    @NonNull
     String channel;
     @NonNull
     String name;
@@ -23,9 +25,9 @@ public abstract class MessageHandler {
      * @param message the contents of the message
      */
     public void send(String message) {
-        Jedis jedis = ConnectionManager.getPool().getResource();
+        Jedis jedis = manager.getPool().getResource();
         jedis.publish(prefix + channel, name + delim + message);
-        ConnectionManager.getPool().returnResource(jedis);
+        manager.getPool().returnResource(jedis);
     }
 
     /**

@@ -4,7 +4,6 @@ import com.google.common.base.Joiner;
 import me.vemacs.rperms.data.Group;
 import me.vemacs.rperms.data.PlayerData;
 import me.vemacs.rperms.rPermissions;
-import me.vemacs.rperms.redis.ConnectionManager;
 import redis.clients.jedis.Jedis;
 
 import java.util.*;
@@ -26,7 +25,7 @@ public class RedisBackend implements Backend {
 
     @Override
     public void loadGroups() {
-        Jedis jedis = ConnectionManager.getPool().getResource();
+        Jedis jedis = rPermissions.getConnectionManager().getPool().getResource();
         try {
             if (jedis.exists(existingKey))
                 for (String grpStr : jedis.smembers(existingKey))
@@ -34,13 +33,13 @@ public class RedisBackend implements Backend {
             else
                 loadGroup("default");
         } finally {
-            ConnectionManager.getPool().returnResource(jedis);
+            rPermissions.getConnectionManager().getPool().returnResource(jedis);
         }
     }
 
     @Override
     public void saveGroup(Group group) {
-        Jedis jedis = ConnectionManager.getPool().getResource();
+        Jedis jedis = rPermissions.getConnectionManager().getPool().getResource();
         String name = group.getName().toLowerCase();
         List<String> perms = new ArrayList<>();
         for (Map.Entry<String, Boolean> entry : group.getPerms().entrySet())
@@ -56,25 +55,25 @@ public class RedisBackend implements Backend {
                 if (!remotePerms.contains(perm))
                     jedis.sadd(permPrefix + name, perm);
         } finally {
-            ConnectionManager.getPool().returnResource(jedis);
+            rPermissions.getConnectionManager().getPool().returnResource(jedis);
         }
     }
 
     @Override
     public void savePlayerData(PlayerData playerData) {
-        Jedis jedis = ConnectionManager.getPool().getResource();
+        Jedis jedis = rPermissions.getConnectionManager().getPool().getResource();
         String name = playerData.getName().toLowerCase();
         try {
             jedis.hset(playerPrefix + name, "prefix", playerData.getPrefix());
             jedis.hset(playerPrefix + name, "group", playerData.getGroup().getName().toLowerCase());
         } finally {
-            ConnectionManager.getPool().returnResource(jedis);
+            rPermissions.getConnectionManager().getPool().returnResource(jedis);
         }
     }
 
     @Override
     public PlayerData loadPlayerData(String player) {
-        Jedis jedis = ConnectionManager.getPool().getResource();
+        Jedis jedis = rPermissions.getConnectionManager().getPool().getResource();
         player = player.toLowerCase();
         PlayerData newData;
         try {
@@ -85,7 +84,7 @@ public class RedisBackend implements Backend {
             else
                 newData = new PlayerData(player, "", rPermissions.getGroups().get("default"));
         } finally {
-            ConnectionManager.getPool().returnResource(jedis);
+            rPermissions.getConnectionManager().getPool().returnResource(jedis);
         }
         rPermissions.getPlayers().put(player, newData);
         return newData;
@@ -93,7 +92,7 @@ public class RedisBackend implements Backend {
 
     @Override
     public Group loadGroup(String group) {
-        Jedis jedis = ConnectionManager.getPool().getResource();
+        Jedis jedis = rPermissions.getConnectionManager().getPool().getResource();
         group = group.toLowerCase();
         Group newGrp;
         try {
@@ -118,7 +117,7 @@ public class RedisBackend implements Backend {
             }
             jedis.sadd(existingKey, group);
         } finally {
-            ConnectionManager.getPool().returnResource(jedis);
+            rPermissions.getConnectionManager().getPool().returnResource(jedis);
         }
         rPermissions.getGroups().put(group, newGrp);
         return newGrp;

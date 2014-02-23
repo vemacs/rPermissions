@@ -5,7 +5,7 @@ import me.vemacs.rperms.redis.MessageHandler;
 
 public class GroupUpdateHandler extends MessageHandler {
     public GroupUpdateHandler(String channel, String name, boolean ignoreSelf) {
-        super(channel, name, ignoreSelf);
+        super(rPermissions.getConnectionManager(), channel, name, ignoreSelf);
     }
 
     @Override

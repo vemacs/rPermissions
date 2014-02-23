@@ -7,7 +7,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.permissions.PermissionAttachment;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -23,7 +22,7 @@ public class Group {
     private List<Group> ancestors;
 
     public void attach(Player p) {
-        PermissionAttachment attachment = p.addAttachment(rPermissions.getInstance());
+        PermissionAttachment attachment = rPermissions.getAttachments().get(p.getName());
         for (Map.Entry<String, Boolean> entry : getPerms().entrySet())
             attachment.setPermission(entry.getKey(), entry.getValue());
     }

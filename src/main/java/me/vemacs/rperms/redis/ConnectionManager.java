@@ -8,8 +8,8 @@ import java.util.Set;
 
 public class ConnectionManager {
     @Getter
-    private static JedisPool pool;
-    static PubSubListener psl;
+    JedisPool pool;
+    PubSubListener psl;
 
     public ConnectionManager(String redisServer, int port, String redisPass, Set<MessageHandler> channels) {
         if (redisPass != null && (redisPass.equals("") || redisPass.equals("none")))
@@ -18,7 +18,7 @@ public class ConnectionManager {
         psl = new PubSubListener(MessageHandler.getPrefix(), channels);
     }
 
-    public static void end() {
+    public void end() {
         psl.poison();
         pool.destroy();
     }

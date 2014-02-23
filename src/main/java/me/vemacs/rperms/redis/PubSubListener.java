@@ -2,10 +2,12 @@ package me.vemacs.rperms.redis;
 
 import redis.clients.jedis.JedisPubSub;
 
+import java.util.Comparator;
 import java.util.Set;
 
 public class PubSubListener {
     String prefix;
+    ConnectionManager connectionManager;
     private JedisPubSub jpsh;
     Set<MessageHandler> channels;
 
@@ -17,7 +19,7 @@ public class PubSubListener {
             new Thread(new Runnable() {
                 @Override
                 public void run() {
-                    ConnectionManager.getPool().getResource().subscribe(jpsh, prefix + entry.getChannel());
+                    connectionManager.getPool().getResource().subscribe(jpsh, prefix + entry.getChannel());
                 }
             }).start();
         }
@@ -25,7 +27,7 @@ public class PubSubListener {
 
     public void poison() {
         jpsh.unsubscribe();
-        ConnectionManager.getPool().returnResource(ConnectionManager.getPool().getResource());
+        connectionManager.getPool().returnResource(connectionManager.getPool().getResource());
     }
 }
 
