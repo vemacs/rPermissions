@@ -3,9 +3,6 @@ package me.vemacs.rperms;
 import lombok.Getter;
 import me.vemacs.rperms.backends.Backend;
 import me.vemacs.rperms.backends.RedisBackend;
-import me.vemacs.rperms.backends.ebean.DbGroup;
-import me.vemacs.rperms.backends.ebean.DbPermission;
-import me.vemacs.rperms.backends.ebean.DbPlayerData;
 import me.vemacs.rperms.data.Group;
 import me.vemacs.rperms.data.PlayerData;
 import me.vemacs.rperms.listener.PlayerListener;
@@ -54,10 +51,5 @@ public class rPermissions extends JavaPlugin {
             rPermissions.getPlayers().get(player.getName()).register();
         }
         getServer().getPluginManager().registerEvents(new PlayerListener(), this);
-    }
-
-    @Override
-    public List<Class<?>> getDatabaseClasses() {
-        return Arrays.asList(DbGroup.class, DbPermission.class, DbPlayerData.class);
     }
 }
