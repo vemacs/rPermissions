@@ -1,8 +1,9 @@
 package me.vemacs.rperms.backends;
 
 import com.google.common.base.Joiner;
-import me.vemacs.rperms.data.Group;
-import me.vemacs.rperms.data.PlayerData;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+import me.vemacs.rperms.data.PermissionData;
 import me.vemacs.rperms.rPermissions;
 import redis.clients.jedis.Jedis;
 
@@ -22,104 +23,59 @@ public class RedisBackend implements Backend {
     }
 
     private static final Joiner joiner = Joiner.on(",").skipNulls();
+    private static final Gson gson = new Gson();
+
 
     @Override
-    public void loadGroups() {
+         public void loadGroups() {
         Jedis jedis = rPermissions.getConnectionManager().getPool().getResource();
         try {
-            if (jedis.exists(existingKey))
-                for (String grpStr : jedis.smembers(existingKey))
-                    loadGroup(grpStr);
-            else
-                loadGroup("default");
-        } finally {
-            rPermissions.getConnectionManager().getPool().returnResource(jedis);
-        }
-    }
-
-    @Override
-    public void saveGroup(Group group) {
-        Jedis jedis = rPermissions.getConnectionManager().getPool().getResource();
-        String name = group.getName().toLowerCase();
-        List<String> perms = new ArrayList<>();
-        for (Map.Entry<String, Boolean> entry : group.getPerms().entrySet())
-            perms.add(entry.getValue() ? "" : "-" + entry.getKey());
-        try {
-            jedis.hset(groupPrefix + name, "prefix", group.getPrefix());
-            jedis.hset(groupPrefix + name, "ancestors", joiner.join(group.getAncestors()));
-            Set<String> remotePerms = jedis.smembers(permPrefix + group);
-            for (String perm : remotePerms)
-                if (!perms.contains(perm))
-                    jedis.srem(permPrefix + name, perm);
-            for (String perm : perms)
-                if (!remotePerms.contains(perm))
-                    jedis.sadd(permPrefix + name, perm);
-        } finally {
-            rPermissions.getConnectionManager().getPool().returnResource(jedis);
-        }
-    }
-
-    @Override
-    public void savePlayerData(PlayerData playerData) {
-        Jedis jedis = rPermissions.getConnectionManager().getPool().getResource();
-        String name = playerData.getName().toLowerCase();
-        try {
-            jedis.hset(playerPrefix + name, "prefix", playerData.getPrefix());
-            jedis.hset(playerPrefix + name, "group", playerData.getGroup().getName().toLowerCase());
-        } finally {
-            rPermissions.getConnectionManager().getPool().returnResource(jedis);
-        }
-    }
-
-    @Override
-    public PlayerData loadPlayerData(String player) {
-        Jedis jedis = rPermissions.getConnectionManager().getPool().getResource();
-        player = player.toLowerCase();
-        PlayerData newData;
-        try {
-            if (jedis.exists(playerPrefix + player)) newData = new PlayerData(player,
-                    jedis.hget(playerPrefix + player, "prefix"),
-                    rPermissions.getGroups().get(jedis.hget(playerPrefix + player, "group").toLowerCase())
-            );
-            else
-                newData = new PlayerData(player, "", rPermissions.getGroups().get("default"));
-        } finally {
-            rPermissions.getConnectionManager().getPool().returnResource(jedis);
-        }
-        rPermissions.getPlayers().put(player, newData);
-        return newData;
-    }
-
-    @Override
-    public Group loadGroup(String group) {
-        Jedis jedis = rPermissions.getConnectionManager().getPool().getResource();
-        group = group.toLowerCase();
-        Group newGrp;
-        try {
-            if (jedis.exists(groupPrefix + group)) {
-                Set<String> permSet = jedis.smembers(permPrefix + group);
-                Map<String, Boolean> perms = new HashMap<>();
-                for (String perm : permSet)
-                    perms.put(perm, !perm.startsWith("-"));
-                List<String> ancestorList = Arrays.asList(jedis.hget(groupPrefix + group, "ancestors").split(","));
-                List<Group> ancestors = new ArrayList<>();
-                for (String ancestor : ancestorList) {
-                    Group ancestorGrp;
-                    if (rPermissions.getGroups().containsKey(ancestor.toLowerCase()))
-                        ancestorGrp = rPermissions.getGroups().get(ancestor.toLowerCase());
-                    else
-                        ancestorGrp = loadGroup(ancestor);
-                    ancestors.add(ancestorGrp);
-                }
-                newGrp = new Group(group, "", perms, ancestors);
+            if (jedis.exists(existingKey)) {
+                Set<String> groups = gson.fromJson(jedis.get(existingKey), new TypeToken<Set<String>>(){}.getType());
+                for (String grpStr : groups)
+                    loadData(groupPrefix + grpStr);
             } else {
-                newGrp = new Group(group, "", new HashMap<String, Boolean>(), Collections.<Group>emptyList());
+                loadData(groupPrefix + "default");
             }
-            jedis.sadd(existingKey, group);
         } finally {
             rPermissions.getConnectionManager().getPool().returnResource(jedis);
         }
-        rPermissions.getGroups().put(group, newGrp);
-        return newGrp;
+    }
+
+    @Override
+    public void saveGroupList() {
+        Jedis jedis = rPermissions.getConnectionManager().getPool().getResource();
+        try {
+            jedis.set(existingKey, gson.toJson(rPermissions.getDataStore().keySet()));
+        } finally {
+            rPermissions.getConnectionManager().getPool().returnResource(jedis);
+        }
+    }
+
+    @Override
+    public void saveData(PermissionData data) {
+        Jedis jedis = rPermissions.getConnectionManager().getPool().getResource();
+        try {
+            jedis.set(groupPrefix + data.getName(), gson.toJson(data));
+        } finally {
+            rPermissions.getConnectionManager().getPool().returnResource(jedis);
+        }
+    }
+
+    @Override
+    public PermissionData loadData(String name) {
+        Jedis jedis = rPermissions.getConnectionManager().getPool().getResource();
+        try {
+            PermissionData data;
+            if (jedis.exists(groupPrefix + name))
+               data = gson.fromJson(jedis.get(groupPrefix + name), PermissionData.class);
+            else
+                data = new PermissionData(name, "", Collections.<String, Boolean>emptyMap(),
+                        Collections.<PermissionData>emptyList());
+            rPermissions.getDataStore().put(name, data);
+            return data;
+        } finally {
+            rPermissions.getConnectionManager().getPool().returnResource(jedis);
+        }
     }
 }

@@ -10,6 +10,6 @@ public class GroupUpdateHandler extends MessageHandler {
 
     @Override
     public void onReceive(String origin, String message) {
-        rPermissions.getGroups().get(message.toLowerCase()).reload();
+        rPermissions.getDataStore().get(message.toLowerCase()).reload();
     }
 }

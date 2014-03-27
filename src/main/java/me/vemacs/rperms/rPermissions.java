@@ -3,8 +3,7 @@ package me.vemacs.rperms;
 import lombok.Getter;
 import me.vemacs.rperms.backends.Backend;
 import me.vemacs.rperms.backends.RedisBackend;
-import me.vemacs.rperms.data.Group;
-import me.vemacs.rperms.data.PlayerData;
+import me.vemacs.rperms.data.PermissionData;
 import me.vemacs.rperms.listener.PlayerListener;
 import me.vemacs.rperms.redis.ConnectionManager;
 import me.vemacs.rperms.redis.MessageHandler;
@@ -23,9 +22,7 @@ public class rPermissions extends JavaPlugin {
     @Getter
     private static Backend backend;
     @Getter
-    private static Map<String, Group> groups = new HashMap<>();
-    @Getter
-    private static Map<String, PlayerData> players = new HashMap<>();
+    private static Map<String, PermissionData> dataStore = new HashMap<>();
     @Getter
     private static ConnectionManager connectionManager;
     @Getter
@@ -39,17 +36,11 @@ public class rPermissions extends JavaPlugin {
                 config.getString("password"), Collections.<MessageHandler>emptySet());
         backend = new RedisBackend(config.getString("prefix"));
         backend.loadGroups();
-        for (Player player : getServer().getOnlinePlayers()) {
-            for (PermissionAttachmentInfo attachmentInfo : player.getEffectivePermissions()) {
-                if (attachmentInfo.getAttachment().getPlugin().getName().equals(getName())) {
-                    attachmentInfo.getAttachment().remove();
-                }
-            }
-            PermissionAttachment attachment = player.addAttachment(rPermissions.getInstance());
-            rPermissions.getAttachments().put(player.getName(), attachment);
-            rPermissions.getPlayers().put(player.getName(), rPermissions.getBackend().loadPlayerData(player.getName()));
-            rPermissions.getPlayers().get(player.getName()).register();
-        }
         getServer().getPluginManager().registerEvents(new PlayerListener(), this);
+    }
+
+    @Override
+    public void onDisable() {
+        backend.saveGroupList();
     }
 }

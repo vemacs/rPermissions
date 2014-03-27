@@ -1,16 +1,13 @@
 package me.vemacs.rperms.backends;
 
-import me.vemacs.rperms.data.Group;
-import me.vemacs.rperms.data.PlayerData;
+import me.vemacs.rperms.data.PermissionData;
 
 public interface Backend {
     public void loadGroups();
 
-    public void saveGroup(Group group);
+    public void saveGroupList();
 
-    public void savePlayerData(PlayerData playerData);
+    public void saveData(PermissionData group);
 
-    public PlayerData loadPlayerData(String name);
-
-    public Group loadGroup(String name);
+    public PermissionData loadData(String name);
 }

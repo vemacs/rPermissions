@@ -11,6 +11,7 @@ import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.permissions.PermissionAttachment;
 
 public class PlayerListener implements Listener {
+    /*
     @EventHandler(priority = EventPriority.MONITOR)
     public void onAsyncPrePlayerLogin(AsyncPlayerPreLoginEvent event) {
         if (event.getLoginResult() == AsyncPlayerPreLoginEvent.Result.ALLOWED) {
@@ -43,4 +44,5 @@ public class PlayerListener implements Listener {
         rPermissions.getAttachments().get(player.getName()).remove();
         rPermissions.getPlayers().remove(player.getName());
     }
+    */
 }
