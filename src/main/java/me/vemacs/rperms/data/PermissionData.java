@@ -1,10 +1,12 @@
 package me.vemacs.rperms.data;
 
+import com.google.common.collect.Lists;
 import lombok.Data;
 import lombok.NonNull;
 import me.vemacs.rperms.rPermissions;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -40,6 +42,15 @@ public class PermissionData {
         if ((prefix.equals("") || prefix == null) && ancestors.size() > 0)
             return getRealAncestors().get(ancestors.size() - 1).getPrefix();
         return prefix == null ? "" : prefix;
+    }
+
+    public Map<String, Boolean> calculatePerms() {
+        // TODO: cache this
+        Map<String, Boolean> calculated = new HashMap<>();
+        for (PermissionData data : Lists.reverse(calculateGroupTree()))
+            for (Map.Entry<String, Boolean> entry : data.getPerms().entrySet())
+                calculated.put(entry.getKey(), entry.getValue());
+        return calculated;
     }
 
     /*
