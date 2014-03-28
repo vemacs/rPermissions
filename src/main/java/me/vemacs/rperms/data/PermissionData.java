@@ -3,8 +3,6 @@ package me.vemacs.rperms.data;
 import lombok.Data;
 import lombok.NonNull;
 import me.vemacs.rperms.rPermissions;
-import org.bukkit.entity.Player;
-import org.bukkit.permissions.PermissionAttachment;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,10 +28,18 @@ public class PermissionData {
     }
 
     private List<PermissionData> getRealAncestors() {
+        // TODO: cache this
         List<PermissionData> realAncestors = new ArrayList<>();
         for (String ancestor : ancestors)
             realAncestors.add(rPermissions.getDataStore().get(ancestor));
         return realAncestors;
+    }
+
+    public String getPrefix() {
+        // TODO: cache this
+        if ((prefix.equals("") || prefix == null) && ancestors.size() > 0)
+            return getRealAncestors().get(ancestors.size() - 1).getPrefix();
+        return "";
     }
 
     /*
