@@ -3,6 +3,7 @@ package me.vemacs.rperms.backends;
 import com.google.common.base.Joiner;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import me.vemacs.rperms.data.GroupData;
 import me.vemacs.rperms.data.PermissionData;
 import me.vemacs.rperms.rPermissions;
 import redis.clients.jedis.Jedis;
@@ -68,9 +69,9 @@ public class RedisBackend implements Backend {
         try {
             PermissionData data;
             if (jedis.exists(groupPrefix + name))
-               data = gson.fromJson(jedis.get(groupPrefix + name), PermissionData.class);
+               data = gson.fromJson(jedis.get(groupPrefix + name), GroupData.class);
             else
-                data = new PermissionData(name, "", new HashMap<String, Boolean>(),
+                data = new GroupData(name, "", new HashMap<String, Boolean>(),
                         new ArrayList<String>());
             rPermissions.getDataStore().put(name, data);
             return data;
