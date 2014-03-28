@@ -70,8 +70,8 @@ public class RedisBackend implements Backend {
             if (jedis.exists(groupPrefix + name))
                data = gson.fromJson(jedis.get(groupPrefix + name), PermissionData.class);
             else
-                data = new PermissionData(name, "", Collections.<String, Boolean>emptyMap(),
-                        Collections.<PermissionData>emptyList());
+                data = new PermissionData(name, "", new HashMap<String, Boolean>(),
+                        new ArrayList<String>());
             rPermissions.getDataStore().put(name, data);
             return data;
         } finally {
