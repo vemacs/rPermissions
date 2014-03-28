@@ -39,7 +39,7 @@ public class PermissionData {
         // TODO: cache this
         if ((prefix.equals("") || prefix == null) && ancestors.size() > 0)
             return getRealAncestors().get(ancestors.size() - 1).getPrefix();
-        return "";
+        return prefix == null ? "" : prefix;
     }
 
     /*
